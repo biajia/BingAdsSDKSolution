@@ -17,19 +17,11 @@ namespace CSProject
             get { return "Campaign CRUD | Campaign Management V10"; }
         }
 
-        /// <summary>
-        /// Write to the console by default.
-        /// </summary>
-        /// <param name="msg">The message to send as output.</param>
-        private void OutputStatusMessage(String msg)
-        {
-            Console.WriteLine(msg);
-        }
-
         public async Task RunAsync(AuthorizationData authorizationData)
         {
             try
             {
+                CommonHelper.OutputSuccessMessage(Description);
                 Service = new ServiceClient<ICampaignManagementService>(authorizationData);
 
                 var campaigns = new[]{
@@ -61,48 +53,56 @@ namespace CSProject
                     Id = campaignIds[0],
                     MonthlyBudget = 500,
                 };
-                Console.WriteLine("Start Get Campaigns");
+                CommonHelper.OutputMessage("Start Get Campaigns");
                 GetCampaignsByIdsResponse res = await GetCampaignsByIdsAsync(authorizationData.AccountId, new[] { (long)campaignIds[0] });
-                Console.WriteLine("get Campaign Count = {0}", res.Campaigns.Count);
-                Console.WriteLine("{0} Start Update Campaigns", DateTime.Now);
+                CommonHelper.OutputMessage(string.Format("get Campaign Count = {0}", res.Campaigns.Count));
+                CommonHelper.OutputMessage("Start Update Campaigns");
                 await UpdateCampaignsAsync(authorizationData.AccountId, new[] { updateCampaign });
-                Console.WriteLine("{0} End Update Campaigns", DateTime.Now);
+                CommonHelper.OutputMessage("End Update Campaigns");
 
                 // Delete the campaign
-                Console.WriteLine("{0} Start Delete Campaign", DateTime.Now);
+                CommonHelper.OutputMessage("Start Delete Campaign");
                 await DeleteCampaignsAsync(authorizationData.AccountId, new[] { (long)campaignIds[0] });
-                Console.WriteLine("{0} End Delete Campaign", DateTime.Now);
+                CommonHelper.OutputMessage("End Delete Campaign");
                 GetCampaignsByIdsResponse res2 = await GetCampaignsByIdsAsync(authorizationData.AccountId, new[] { (long)campaignIds[0] });
                 if (res2 == null)
                 {
-                    Console.WriteLine("Res2 = null");
+                    CommonHelper.OutputErrorMessage(string.Format("Get Campaign Id = {0} Failed", (long)campaignIds[0]));
                     return;
                 }
-                Console.WriteLine("get Campaign Count = {0}, CampaignId = {1}", res2.Campaigns == null ? 0 : res2.Campaigns.Count, res2.Campaigns[0] == null ? "null" : res2.Campaigns[0].ToString());
+                if(res2.Campaigns.Count == 1 && res2.Campaigns[0] == null)
+                {
+                    CommonHelper.OutputMessage(string.Format("Delete Campaign Id = {0} Successfully", (long)campaignIds[0]));
+                }
+                else
+                {
+                    CommonHelper.OutputErrorMessage(string.Format("Delete Campaign Id = {0} Failed", (long)campaignIds[0]));
+                }
             }
             // Catch authentication exceptions
             catch (OAuthTokenRequestException ex)
             {
-                OutputStatusMessage(string.Format("Couldn't get OAuth tokens. Error: {0}. Description: {1}", ex.Details.Error, ex.Details.Description));
+                CommonHelper.OutputErrorMessage(string.Format("Couldn't get OAuth tokens. Error: {0}. Description: {1}", ex.Details.Error, ex.Details.Description));
             }
             // Catch Campaign Management service exceptions
             catch (FaultException<Microsoft.BingAds.V10.CampaignManagement.AdApiFaultDetail> ex)
             {
-                OutputStatusMessage(string.Join("; ", ex.Detail.Errors.Select(error => string.Format("{0}: {1}", error.Code, error.Message))));
+                CommonHelper.OutputErrorMessage(string.Join("; ", ex.Detail.Errors.Select(error => string.Format("{0}: {1}", error.Code, error.Message))));
             }
             catch (FaultException<Microsoft.BingAds.V10.CampaignManagement.ApiFaultDetail> ex)
             {
-                OutputStatusMessage(string.Join("; ", ex.Detail.OperationErrors.Select(error => string.Format("{0}: {1}", error.Code, error.Message))));
-                OutputStatusMessage(string.Join("; ", ex.Detail.BatchErrors.Select(error => string.Format("{0}: {1}", error.Code, error.Message))));
+                CommonHelper.OutputErrorMessage(string.Join("; ", ex.Detail.OperationErrors.Select(error => string.Format("{0}: {1}", error.Code, error.Message))));
+                CommonHelper.OutputErrorMessage(string.Join("; ", ex.Detail.BatchErrors.Select(error => string.Format("{0}: {1}", error.Code, error.Message))));
             }
             catch (FaultException<Microsoft.BingAds.V10.CampaignManagement.EditorialApiFaultDetail> ex)
             {
-                OutputStatusMessage(string.Join("; ", ex.Detail.OperationErrors.Select(error => string.Format("{0}: {1}", error.Code, error.Message))));
-                OutputStatusMessage(string.Join("; ", ex.Detail.BatchErrors.Select(error => string.Format("{0}: {1}", error.Code, error.Message))));
+                CommonHelper.OutputErrorMessage(string.Join("; ", ex.Detail.OperationErrors.Select(error => string.Format("{0}: {1}", error.Code, error.Message))));
+                CommonHelper.OutputErrorMessage(string.Join("; ", ex.Detail.BatchErrors.Select(error => string.Format("{0}: {1}", error.Code, error.Message))));
             }
             catch (Exception ex)
             {
-                OutputStatusMessage(ex.Message);
+                CommonHelper.OutputErrorMessage(ex.Message);
+                CommonHelper.OutputErrorMessage(ex.StackTrace);
             }
         }
 
@@ -170,7 +170,7 @@ namespace CSProject
 
                 if (campaignIds[index] != null)
                 {
-                    OutputStatusMessage(String.Format("Campaign[{0}] (Name:{1}) successfully added and assigned CampaignId {2}",
+                    CommonHelper.OutputMessage(String.Format("Campaign[{0}] (Name:{1}) successfully added and assigned CampaignId {2}",
                         index,
                         campaigns[index].Name,
                         campaignIds[index]));
@@ -185,25 +185,25 @@ namespace CSProject
                 // The index of the partial errors is equal to the index of the list
                 // specified in the call to AddCampaigns.
 
-                OutputStatusMessage(String.Format("\nCampaign[{0}] (Name:{1}) not added due to the following error:",
+                CommonHelper.OutputMessage(String.Format("\nCampaign[{0}] (Name:{1}) not added due to the following error:",
                     error.Index, campaigns[error.Index].Name));
 
-                OutputStatusMessage(String.Format("\tIndex: {0}", error.Index));
-                OutputStatusMessage(String.Format("\tCode: {0}", error.Code));
-                OutputStatusMessage(String.Format("\tErrorCode: {0}", error.ErrorCode));
-                OutputStatusMessage(String.Format("\tMessage: {0}", error.Message));
+                CommonHelper.OutputMessage(String.Format("\tIndex: {0}", error.Index));
+                CommonHelper.OutputMessage(String.Format("\tCode: {0}", error.Code));
+                CommonHelper.OutputMessage(String.Format("\tErrorCode: {0}", error.ErrorCode));
+                CommonHelper.OutputMessage(String.Format("\tMessage: {0}", error.Message));
 
                 // In the case of an EditorialError, more details are available
                 if (error.Type == "EditorialError" && error.ErrorCode == "CampaignServiceEditorialValidationError")
                 {
-                    OutputStatusMessage(String.Format("\tDisapprovedText: {0}", ((EditorialError)(error)).DisapprovedText));
-                    OutputStatusMessage(String.Format("\tLocation: {0}", ((EditorialError)(error)).Location));
-                    OutputStatusMessage(String.Format("\tPublisherCountry: {0}", ((EditorialError)(error)).PublisherCountry));
-                    OutputStatusMessage(String.Format("\tReasonCode: {0}\n", ((EditorialError)(error)).ReasonCode));
+                    CommonHelper.OutputMessage(String.Format("\tDisapprovedText: {0}", ((EditorialError)(error)).DisapprovedText));
+                    CommonHelper.OutputMessage(String.Format("\tLocation: {0}", ((EditorialError)(error)).Location));
+                    CommonHelper.OutputMessage(String.Format("\tPublisherCountry: {0}", ((EditorialError)(error)).PublisherCountry));
+                    CommonHelper.OutputMessage(String.Format("\tReasonCode: {0}\n", ((EditorialError)(error)).ReasonCode));
                 }
             }
 
-            OutputStatusMessage("\n");
+            CommonHelper.OutputMessage("\n");
         }
     }
 }
