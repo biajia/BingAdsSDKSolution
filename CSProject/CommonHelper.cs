@@ -10,27 +10,27 @@ namespace CSProject
     {
         public static void OutputMessage(string msg)
         {
-            Console.WriteLine(GetDateTimeInMillisecond() + " " + msg);
+            Console.WriteLine(GetDateTimeInMillisecond() + "\t" + msg);
         }
 
         public static void OutputWarningMessage(string msg)
         {
             Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine(GetDateTimeInMillisecond() + " " + msg);
+            OutputMessage(msg);
             Console.ResetColor();
         }
 
         public static void OutputErrorMessage(string msg)
         {
             Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine(GetDateTimeInMillisecond() + " " + msg);
+            OutputMessage(msg);
             Console.ResetColor();
         }
 
         public static void OutputSuccessMessage(string msg)
         {
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine(GetDateTimeInMillisecond() + " " + msg);
+            OutputMessage(msg);
             Console.ResetColor();
         }
 

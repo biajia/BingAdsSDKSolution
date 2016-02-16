@@ -24,7 +24,6 @@ namespace CSProject
                 DeveloperToken = GlobalConfig.DevToken
             };
 
-            return null;
             return authorizationData;
         }
 
@@ -84,7 +83,6 @@ namespace CSProject
                 //How to generate OAuthTokens
             }
 
-            //authentication.RequestAccessAndRefreshTokensAsync(refreshToken).Wait();
             CommonHelper.OutputMessage(string.Format("OAuthTokens.AccessToken = {0}", authentication.OAuthTokens.AccessToken));
             CommonHelper.OutputMessage(string.Format("OAuthTokens.AccessTokenExpiresInSeconds = {0}", authentication.OAuthTokens.AccessTokenExpiresInSeconds));
             CommonHelper.OutputMessage(string.Format("OAuthTokens.RefreshToken = {0}", authentication.OAuthTokens.RefreshToken));
@@ -113,6 +111,7 @@ namespace CSProject
 
         private static bool NeedRequestAccessToken(DateTime generationTime, int accessTokenExpiresInSeconds)
         {
+            return true;
             DateTime currentTime = DateTime.Now;
 
             //CommonHelper.OutputMessage(string.Format("CurrentTime = {0}, GenerationTime = {1}, Diff = {2}", CommonHelper.GetDateTimeInMillisecond(currentTime), CommonHelper.GetDateTimeInMillisecond(generationTime), currentTime.Subtract(generationTime).TotalSeconds));

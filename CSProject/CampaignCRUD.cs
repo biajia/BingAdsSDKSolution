@@ -24,7 +24,8 @@ namespace CSProject
                 CommonHelper.OutputSuccessMessage(Description);
                 Service = new ServiceClient<ICampaignManagementService>(authorizationData);
 
-                var campaigns = new[]{
+                var campaigns = new[]
+                {
                     new Campaign
                     {
                         Name = "Women's Shoes - " + DateTime.UtcNow,
@@ -32,20 +33,31 @@ namespace CSProject
                         BudgetType = BudgetLimitType.MonthlyBudgetSpendUntilDepleted,
                         MonthlyBudget = 1000.00,
                         TimeZone = "PacificTimeUSCanadaTijuana",
-                        DaylightSaving = true,
-
-                        // Used with FinalUrls shown in the text ads that we will add below.
-                        //TrackingUrlTemplate = 
-                            //"http://tracker.example.com/?season={_season}&promocode={_promocode}&u={lpurl}"
+                        DaylightSaving = true
                     },
                 };
-
+                CommonHelper.OutputMessage("Campaigns To Be Added ----------");
+                OutputCampaigns(campaigns);
 
                 // Add the campaign
+                CommonHelper.OutputMessage("Start Add Campaigns ----------");
                 AddCampaignsResponse addCampaignsResponse = await AddCampaignsAsync(authorizationData.AccountId, campaigns);
                 long?[] campaignIds = addCampaignsResponse.CampaignIds.ToArray();
                 BatchError[] campaignErrors = addCampaignsResponse.PartialErrors.ToArray();
-                OutputCampaignsWithPartialErrors(campaigns, campaignIds, campaignErrors);
+                if(campaignIds.Length != campaigns.Length)
+                {
+                    CommonHelper.OutputErrorMessage(string.Format("Expect {0} Campaigns, But Returned {1} Campaigns", campaigns.Length, campaignIds.Length));
+                    return;
+                }
+                for (int i = 0; i < campaignIds.Length; i++)
+                {
+                    CommonHelper.OutputMessage(string.Format("Campaign Index = {0}, Id = {1}", i, campaignIds[i]));
+                }
+
+
+                CommonHelper.OutputMessage("Start Get Campaigns ----------");
+                GetCampaignsByIdsResponse res = await GetCampaignsByIdsAsync(authorizationData.AccountId, new[] { (long)campaignIds[0] });
+                OutputCampaigns(res.Campaigns.ToArray());
 
                 // Update the campaign
                 var updateCampaign = new Campaign
@@ -53,17 +65,14 @@ namespace CSProject
                     Id = campaignIds[0],
                     MonthlyBudget = 500,
                 };
-                CommonHelper.OutputMessage("Start Get Campaigns");
-                GetCampaignsByIdsResponse res = await GetCampaignsByIdsAsync(authorizationData.AccountId, new[] { (long)campaignIds[0] });
-                CommonHelper.OutputMessage(string.Format("get Campaign Count = {0}", res.Campaigns.Count));
-                CommonHelper.OutputMessage("Start Update Campaigns");
+                CommonHelper.OutputMessage("Start Update Campaigns ----------");
                 await UpdateCampaignsAsync(authorizationData.AccountId, new[] { updateCampaign });
-                CommonHelper.OutputMessage("End Update Campaigns");
+                res = await GetCampaignsByIdsAsync(authorizationData.AccountId, new[] { (long)campaignIds[0] });
+                OutputCampaigns(res.Campaigns.ToArray());
 
                 // Delete the campaign
-                CommonHelper.OutputMessage("Start Delete Campaign");
+                CommonHelper.OutputMessage("Start Delete Campaign ----------");
                 await DeleteCampaignsAsync(authorizationData.AccountId, new[] { (long)campaignIds[0] });
-                CommonHelper.OutputMessage("End Delete Campaign");
                 GetCampaignsByIdsResponse res2 = await GetCampaignsByIdsAsync(authorizationData.AccountId, new[] { (long)campaignIds[0] });
                 if (res2 == null)
                 {
@@ -103,6 +112,21 @@ namespace CSProject
             {
                 CommonHelper.OutputErrorMessage(ex.Message);
                 CommonHelper.OutputErrorMessage(ex.StackTrace);
+            }
+        }
+
+        private void OutputCampaigns(Campaign[] campaigns)
+        {
+            CommonHelper.OutputMessage(string.Format("Output {0} Campaigns", campaigns.Length));
+            for (int i = 0; i < campaigns.Length; i++)
+            {
+                CommonHelper.OutputMessage(string.Format("Campaigns_{0}", i));
+                CommonHelper.OutputMessage(string.Format("Campaign Name = {0}", campaigns[i].Name));
+                CommonHelper.OutputMessage(string.Format("Campaign Description = {0}", campaigns[i].Description));
+                CommonHelper.OutputMessage(string.Format("Campaign BudgetType = {0}", campaigns[i].BudgetType));
+                CommonHelper.OutputMessage(string.Format("Campaign MonthlyBudget = {0}", campaigns[i].MonthlyBudget));
+                CommonHelper.OutputMessage(string.Format("Campaign TimeZone = {0}", campaigns[i].TimeZone));
+                CommonHelper.OutputMessage(string.Format("Campaign DaylightSaving = {0}", campaigns[i].DaylightSaving));
             }
         }
 
