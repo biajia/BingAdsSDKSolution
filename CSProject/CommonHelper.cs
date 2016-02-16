@@ -37,6 +37,11 @@ namespace CSProject
         public static string GetDateTimeInMillisecond()
         {
             DateTime currentTime = DateTime.Now;
+            return GetDateTimeInMillisecond(currentTime);
+        }
+
+        public static string GetDateTimeInMillisecond(DateTime currentTime)
+        {
             return currentTime.ToString("yyyy-MM-dd hh:mm:ss.fff tt");
         }
     }
