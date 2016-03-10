@@ -26,8 +26,10 @@ namespace CSProject
                     return;
                 }
 
-                CampaignCRUD campaignOperator = new CampaignCRUD();
-                campaignOperator.RunAsync(authorizationData).Wait();
+                //CampaignCRUD campaignOperator = new CampaignCRUD();
+                //campaignOperator.RunAsync(authorizationData).Wait();
+                AdExtensionCRUD extensionOperator = new AdExtensionCRUD();
+                extensionOperator.RunAsync(authorizationData).Wait();
             }
             catch (Exception ex)
             {
